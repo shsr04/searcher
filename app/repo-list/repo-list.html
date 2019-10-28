@@ -1,0 +1,10 @@
+<div>
+    <input placeholder="Search repositories" ng-model="$ctrl.searchTerm" class="col-12">
+    <p>
+        <span ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
+        <span ng-show="!$ctrl.searchTerm">Enter a repository name</span>
+    </p>
+    <ul ng-repeat="r in $ctrl.repos | filter:{repo:$ctrl.searchTerm}">
+        <li>{{r.author}}/{{r.repo}} : {{r.stars}} stars</li>
+    </ul>
+</div>

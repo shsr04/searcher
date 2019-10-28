@@ -1,0 +1,22 @@
+{
+  "name": "searcher",
+  "version": "1.0.0",
+  "description": "Scrape source files on GitHub and analyze them",
+  "main": "app/app.module.js",
+  "scripts": {
+    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix */*.js || true"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "1.7.x",
+    "crawler": "1.2.x",
+    "http-server": "0.11.x",
+    "minimist": "1.2.x"
+  },
+  "devDependencies": {
+    "eslint": "6.6.x"
+  }
+}
