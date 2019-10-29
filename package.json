@@ -2,11 +2,12 @@
   "name": "searcher",
   "version": "1.0.0",
   "description": "Scrape source files on GitHub and analyze them",
+  "private": true,
   "main": "app/app.module.js",
   "scripts": {
-    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --fix */*.js || true"
+    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js -e",
+    "test": "ava",
+    "lint": "eslint --fix */*.js */**/*.js || true"
   },
   "author": "",
   "license": "MIT",
@@ -17,6 +18,8 @@
     "minimist": "1.2.x"
   },
   "devDependencies": {
-    "eslint": "6.6.x"
+    "ava": "2.4.x",
+    "eslint": "6.6.x",
+    "sinon": "7.x"
   }
 }

@@ -1,52 +1,68 @@
 const url = require('url')
 const Crawler = require('crawler')
 const cheerio = require('cheerio')
-const { extractInfo } = require('./extract')
+const { saveRepoDetails, saveCodeFile } = require('./extract')
+const { analyzeC } = require("./analyze")
 
 let pages = new Set()
 let baseUrl
 
 const crawler = new Crawler({
-	maxConnections: 20,
-	retries: 1,
-	retryTimeout: 3000,
+	maxConnections: 10,
+	retries: 2,
+	retryTimeout: 1000,
 	jQuery: false,
 	callback: (err, res, done) => {
 		if (err) throw err
 
 		const type = res.headers['content-type']
-		const pageUrl = formatUrl(res.request.uri)
-		//console.log(`${res.statusCode} ${pageUrl}`)
+		const pageUrl = formatUrl(res.request.uri.href)
+		console.log(`${res.statusCode} ${pageUrl}`)
 		if (type.startsWith('text/html')) {
 			const $ = cheerio.load(res.body)
-			extractInfo($)
+			const details = $('.repohead-details-container')
+			if (details.length) {
+				saveRepoDetails(pageUrl, $, details)
+			}
+			const code = $(".blob-wrapper")
+			if (pageUrl.includes("/blob/master/") && code.length) {
+				const type = pageUrl.split('/').pop().split('.').pop()
+				let analytics = {}
+				if (["c", "h", "cc", "cpp", "hpp"].includes(type)) {
+					analytics = analyzeC(pageUrl.split('/').pop(), code.text())
+				}
+				saveCodeFile(pageUrl, type, code.text(), analytics)
+			}
 			$('a').each((i, e) => {
 				addPage(formatUrl($(e).attr('href')))
 			})
-		} else if (type.startsWith('text/plain')) {
-			console.log('raw: ', pageUrl)
-			if(pageUrl.endsWith('.cpp')) {
-                
-			}
 		}
 
 		done()
 	}
 })
 
+/**
+ * Remove useless parts from request URI.
+ * @param {string} p URL to format
+ * @returns {string} base part of the URL
+ */
 function formatUrl(p) {
 	if (!p) return undefined
-	const a = url.format(p, { fragment: false, auth: false, search: false, unicode: true })
-	const b = new URL(a, baseUrl)
-	return b.href
+	const a = new URL(p, baseUrl)
+	if(!a) return undefined
+	return a.origin + a.pathname
 }
 
+/**
+ * Add a page to the crawler queue
+ * @param {string} p URL to queue
+ */
 function addPage(p) {
 	if (!p) return
-	let url = new URL(p)
 	if (pages.size === 0) {
-		baseUrl = url.origin
-	} else if (url.origin !== baseUrl) {
+		baseUrl = p
+	} else if (!p.startsWith(baseUrl)) {
 		// console.log(`skipping outgoing URL ${url.origin}`)
 		return
 	}

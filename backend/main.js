@@ -2,7 +2,9 @@
 const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
-const { getRepos } = require('./extract')
+const parseArgs = require('minimist')
+const {addPage} = require("./pages")
+const { getRepos, writeMapsToDisk } = require('./extract')
 const { log } = require('./log')
 
 let unlocked = false
@@ -41,7 +43,7 @@ const server = http.createServer(async (req, res) => {
 	switch(req.method+' '+req.url) {
 		case 'GET /repos':
 			res.setHeader('Content-Type', 'application/json')
-			const r = JSON.stringify(getRepos())
+			const r = JSON.stringify(getRepos("fake!"))
 			res.write(r)
 			break;
 		case 'POST /unlock':
@@ -63,11 +65,23 @@ const server = http.createServer(async (req, res) => {
 })
 
 async function main() {
-	const password = fs.readFileSync('backend/key', 'utf-8').trim()
-	encOutput = encrypt(password, encInput)
-	server.listen(8020)
-	//addPage('https://github.com/explore')
+	const args = parseArgs(process.argv.slice(2))
+	if(args.help) {
+		console.log('-s <url>\t\tset base url\n-e\t\t\tsecure access with crypto challenge')
+		return
+	}
+	if(args.e) {
+		const password = fs.readFileSync('backend/key', 'utf-8').trim()
+		encOutput = encrypt(password, encInput)
+		server.listen(8020)
+	}
+	if(args.s) addPage(args.s)
 }
+
+process.on("SIGINT",()=>{
+	writeMapsToDisk()
+	process.exit()
+})
 
 main().catch(e => {
 	console.error('Searcher ERROR: ', e)
