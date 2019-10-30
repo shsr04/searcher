@@ -1,9 +1,11 @@
-<div class="mb-3 ml-5">
-    <div class="row">
-        <p class="col">Details of {{$ctrl.author}}/{{$ctrl.name}}</p>
-    </div>
-    <div class="row" ng-repeat="f in $ctrl.files | orderBy:'name'">
-        <span class="col">File: {{f.name}}</span>
+<div class="slim container">
+    <div class="main">
+        <div class="row">
+            <p>Details of {{$ctrl.author}}/{{$ctrl.name}}</p>
+        </div>
+        <div class="row">s</div>
+        <div class="row" ng-repeat="f in $ctrl.files | orderBy:'name'">
+            <span class="col">File: {{f.name}}</span>
+        </div>
     </div>
 </div>
-    

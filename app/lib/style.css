@@ -1,4 +1,45 @@
 body {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    font-size: large;   
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;    
+}
+
+.container {
+    display: grid;
+    grid:
+        ".      .       ."      1.5fr
+        ".      head    ."      1fr
+        ".      .       ."      0.5fr
+        ".      main    ."      auto
+    /   1fr     4fr     1fr     ;
+}
+.slim.container {
+    display: grid;
+    grid:
+        ".      main    ."      auto
+    /   1fr     3fr     1fr     ;
+}
+.head {
+    grid-area: head;
+    display: grid;
+}
+.main {
+    grid-area: main;
+    display: grid;
+}
+
+/**
+ * Justify the children in bulk, centering and spacing them.
+ * (Not to be confused with justify-items, which aligns each child on its own.)
+ */
+.head.centered, .main.centered, .row.centered {
+    justify-content: space-around;
+}
+
+.row {
+    display: flex;
+}
+.row > .col {
+    flex: auto;
+}
+.row > .col.wide {
+    flex-grow: 100;
 }

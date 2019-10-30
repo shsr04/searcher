@@ -1,16 +1,22 @@
-<div class="row">
-    <input class="col" placeholder="Search repositories" ng-model="$ctrl.searchTerm">
-</div>
-<p class="row mb-4">
-    <span class="col" ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
-    <span class="col" ng-show="!$ctrl.searchTerm">Enter a repository name</span>
-</p>
-<div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:stars">
-    <div class="row">
-        <span class="col-8">
-            {{r.author}}/{{r.name}} : {{r.stars}} stars
-        </span>
-        <span class="col-2"><a href="" ng-click="showMe=!showMe" ng-init="showMe=false">Details</a></span>
+<div class="container">
+    <div class="head">
+        <input placeholder="Search repositories" ng-model="$ctrl.searchTerm">
+        <p>
+            <span class="col" ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
+            <span class="col" ng-show="!$ctrl.searchTerm">Enter a repository name</span>
+        </p>
     </div>
-    <repo-details ng-show="showMe" repo="r"></repo-details>
+    <div class="main">
+        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:stars">
+            <div class="row">
+                <span class="wide col">
+                    {{r.author}}/{{r.name}} : {{r.stars}} stars
+                </span>
+                <span class="col">
+                    <a href="" ng-click="showMe=!showMe" ng-init="showMe=false" class="btn btn-info">Details</a>
+                </span>
+            </div>
+            <repo-details ng-show="showMe" repo="r"></repo-details>
+        </div>
+    </div>
 </div>
