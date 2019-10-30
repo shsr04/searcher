@@ -1,10 +1,11 @@
 const Crawler = require('crawler')
 const cheerio = require('cheerio')
 const { saveRepoDetails, saveCodeFile } = require('./extract')
-const { fileType } = require('./store')
 const { analyzeC } = require('./analyze')
+const {log} =require("./log") 
 
 let pages = new Set()
+let RESTRICT = false
 let baseUrl
 
 const crawler = new Crawler({
@@ -17,23 +18,33 @@ const crawler = new Crawler({
 
 		const contentType = res.headers['content-type']
 		const pageUrl = formatUrl(res.request.uri.href)
-		console.log(`${res.statusCode} ${pageUrl}`)
+		if (!pageUrl.startsWith(baseUrl)) {
+			done()		//e.g. after redirect
+			return
+		}
+		log(`${res.statusCode} ${pageUrl}`, "TRACE")
 		if (contentType.startsWith('text/html')) {
 			const $ = cheerio.load(res.body)
 			saveRepoDetails(pageUrl, $).then(() => {
 				const code = $('.blob-wrapper')
 				if (pageUrl.includes('/blob/master/') && code.length) {
-					const suffix = pageUrl.split('/').pop().split('.').pop()
 					let analytics = {}
+					let content = ''
+					const suffix = pageUrl.slice(0, pageUrl.length - 1).split(".").pop()
 					if (['c', 'h', 'cc', 'cpp', 'hpp'].includes(suffix)) {
-						analytics = analyzeC(pageUrl.split('/').pop(), code.text())
+						content = code.text()
+						log(`analyzing ${pageUrl}`)
+						analytics = analyzeC(pageUrl.split('/').pop(), content)
 					}
-					return saveCodeFile(pageUrl, fileType(suffix), code.text(), analytics)
+					return saveCodeFile(pageUrl, content, analytics)
 				}
 				return Promise.resolve()
 			}).then(() => {
 				$('a').each((i, e) => {
-					addPage(formatUrl($(e).attr('href')))
+					const href = $(e).attr('href')
+					if (href && href.startsWith(baseUrl)) {
+						addPage(href)
+					}
 				})
 			}).then(() => {
 				done()
@@ -53,7 +64,8 @@ function formatUrl(p) {
 	if (!p) return undefined
 	const a = new URL(p, baseUrl)
 	if (!a) return undefined
-	return a.origin + a.pathname
+	const b = a.origin + a.pathname
+	return b.charAt(b.length - 1) != '/' ? b + '/' : b
 }
 
 /**
@@ -62,17 +74,20 @@ function formatUrl(p) {
  */
 function addPage(p) {
 	if (!p) return
+	let url = formatUrl(p)
 	if (pages.size === 0) {
-		baseUrl = p.charAt(p.length - 1) != '/' ? p + '/' : p
+		if (RESTRICT) baseUrl = url
+		else baseUrl = new URL(url).origin + "/"
 		console.log('base', baseUrl)
-	} else if (!p.startsWith(baseUrl)) {
-		// console.log(`skipping outgoing URL ${url.origin}`)
-		return
 	}
-	if (!pages.has(p)) {
-		pages.add(p)
-		crawler.queue(p)
+	if (!pages.has(url)) {
+		pages.add(url)
+		crawler.queue(url)
 	}
 }
 
-module.exports = { addPage }
+function setRestrict(bool) {
+	RESTRICT = bool
+}
+
+module.exports = { addPage, setRestrict }

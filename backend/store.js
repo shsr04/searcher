@@ -38,7 +38,8 @@ async function addFileEntry(repoUrl, file) {
 	if (err) throw err
 	for (let a of repoList.repos) {
 		if (a.url === repoUrl) {
-			a.files.push(file)
+            if(!a.files) a.files=[file]
+            else a.files.push(file)
 			return true
 		}
 	}
@@ -70,7 +71,8 @@ async function initStorage() {
 	if (fs.existsSync(REPOSITORY_STORE)) {
 		const buffer = fs.readFileSync(REPOSITORY_STORE)
 		const list = RepositoryList.decode(buffer)
-		repoList = list.toJSON()
+        repoList = list.toJSON()
+        console.log(repoList)
 	} else {
 		const emptyList = { repos: [] }
 		const err = RepositoryList.verify(emptyList)

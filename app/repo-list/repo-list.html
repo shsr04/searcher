@@ -5,12 +5,12 @@
     <span class="col" ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
     <span class="col" ng-show="!$ctrl.searchTerm">Enter a repository name</span>
 </p>
-<div ng-repeat="r in $ctrl.repos | filter:{repo:$ctrl.searchTerm}">
-    <div class="row justify-content-around">
+<div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:stars">
+    <div class="row">
         <span class="col-8">
-            {{r.author}}/{{r.repo}} : {{r.stars}} stars
+            {{r.author}}/{{r.name}} : {{r.stars}} stars
         </span>
         <span class="col-2"><a href="" ng-click="showMe=!showMe" ng-init="showMe=false">Details</a></span>
     </div>
-    <repo-details ng-show="showMe" author="r.author" repo="r.repo"></repo-details>
+    <repo-details ng-show="showMe" repo="r"></repo-details>
 </div>

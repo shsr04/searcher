@@ -3,7 +3,7 @@ const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { addPage } = require('./pages')
+const { addPage, setRestrict } = require('./pages')
 const { initStorage, writeToDisk, allRepos } = require('./store')
 const { log } = require('./log')
 
@@ -41,32 +41,32 @@ const server = http.createServer(async (req, res) => {
 		return
 	}
 	switch (req.method + ' ' + req.url) {
-	case 'GET /repos': {
-		if (!unlocked) {
-			res.writeHead(401)
+		case 'GET /repos': {
+			if (!unlocked) {
+				res.writeHead(401)
+				break
+			}
+			res.setHeader('Content-Type', 'application/json')
+			const r = JSON.stringify(allRepos())
+			res.write(r)
 			break
 		}
-		res.setHeader('Content-Type', 'application/json')
-		const r = JSON.stringify(allRepos())
-		res.write(r)
-		break
-	}
-	case 'POST /unlock': {
-		const data = await getBody(req)
-		const result = encrypt(data, encInput)
-		if (result === encOutput) {
-			log('UNLOCKING BACKEND')
-			unlocked = true
-			// setTimeout(() => { unlocked = false }, 10 * 1000)
-		} else {
-			log('key mismatch, backend locked')
-			unlocked = false
-			res.writeHead(401)
+		case 'POST /unlock': {
+			const data = await getBody(req)
+			const result = encrypt(data, encInput)
+			if (result === encOutput) {
+				log('UNLOCKING BACKEND')
+				unlocked = true
+				// setTimeout(() => { unlocked = false }, 10 * 1000)
+			} else {
+				log('key mismatch, backend locked')
+				unlocked = false
+				res.writeHead(401)
+			}
+			break
 		}
-		break
-	}
-	default:
-		res.writeHead(400)
+		default:
+			res.writeHead(400)
 	}
 	res.end()
 })
@@ -80,12 +80,11 @@ async function main() {
 	if (args.e) {
 		const password = fs.readFileSync('backend/key', 'utf-8').trim()
 		encOutput = encrypt(password, encInput)
-		server.listen(8020)
 	}
-	if (args.s) {
-		await initStorage()
-		addPage(args.s)
-	}
+	await initStorage()
+	server.listen(8020)
+	if (args.r) setRestrict(true)
+	if (args.s) addPage(args.s)
 }
 
 process.on('SIGINT', () => {

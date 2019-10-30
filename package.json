@@ -5,7 +5,7 @@
   "private": true,
   "main": "app/app.module.js",
   "scripts": {
-    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js -e",
+    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js -e -r -s https://github.com/OpenRCT2/OpenRCT2",
     "test": "ava",
     "lint": "eslint --fix backend/*.js app/**/*.js || true"
   },

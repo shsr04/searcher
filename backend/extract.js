@@ -1,10 +1,11 @@
 const { log } = require('./log')
-const { storeRepo, addFileEntry } = require('./store')
+const { storeRepo, addFileEntry, fileType } = require('./store')
 
 async function saveRepoDetails(url, $) {
+	const repoUrl = new URL(url).origin + new URL(url).pathname.split("/").slice(0, 3).join("/") + "/"
 	const details = $('.repohead-details-container')
 	if (!details.length) {
-		return false
+		return
 	}
 	const author = details.find($('span.author')).text()
 	const name = details.find($('strong[itemprop="name"]')).text()
@@ -14,13 +15,15 @@ async function saveRepoDetails(url, $) {
 			stars = Number.parseInt($(e).attr('aria-label').split(' ')[0])
 		}
 	})
-	await storeRepo({ url, author, name, stars, files: [] })
-	return true
+	await storeRepo({ url: repoUrl, author, name, stars })
 }
 
-async function saveCodeFile(url, type, content, analytics) {
+async function saveCodeFile(url, content, analytics) {
 	const repoUrl = new URL(url).origin + new URL(url).pathname.split('/').slice(0, 3).join('/') + '/'
-	await addFileEntry(repoUrl, { url, type, content, analytics })
+	const name = url.slice(0, url.length - 1).split('/').pop()
+	const type = fileType(name.split(".").pop())
+	log(`adding ${type} file: ${name}`)
+	await addFileEntry(repoUrl, { url, name, type, content, analytics })
 }
 
 module.exports = { saveRepoDetails, saveCodeFile }
