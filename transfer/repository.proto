@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package searcher;
+
+message Analytic {
+    uint32 linesOfCode = 1;
+    uint32 linesOfComment = 2;
+    uint32 cyclomaticComplexity = 3;
+}
+
+message File {
+    string url = 1;
+    string name = 2;
+    enum FileType {
+        C_CPP = 0;
+    }
+    FileType type = 3;
+    bytes content = 4;
+    Analytic analytic = 5;
+}
+
+message Repository {
+    required string url = 5;
+    required string author = 1;
+    required string name = 2;
+    uint32 stars = 3;
+    repeated File files = 4;
+}
+
+message RepositoryList {
+    repeated Repository repos = 1;
+}

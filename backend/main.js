@@ -3,8 +3,8 @@ const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
 const parseArgs = require('minimist')
-const {addPage} = require("./pages")
-const { getRepos, writeMapsToDisk } = require('./extract')
+const { addPage } = require('./pages')
+const { initStorage, writeToDisk, allRepos } = require('./store')
 const { log } = require('./log')
 
 let unlocked = false
@@ -35,51 +35,61 @@ const server = http.createServer(async (req, res) => {
 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
 	res.setHeader('Access-Control-Allow-Origin', '*')
-	if (req.method=="OPTIONS") {
+	if (req.method == 'OPTIONS') {
 		res.writeHead(200)
 		res.end()
 		return
 	}
-	switch(req.method+' '+req.url) {
-		case 'GET /repos':
-			res.setHeader('Content-Type', 'application/json')
-			const r = JSON.stringify(getRepos("fake!"))
-			res.write(r)
-			break;
-		case 'POST /unlock':
-			const data = await getBody(req)
-			const result = encrypt(data, encInput)
-			if (result === encOutput) {
-				log('UNLOCKING BACKEND')
-				unlocked = true
-				// setTimeout(() => { unlocked = false }, 10 * 1000)
-			} else {
-				log('key mismatch, backend remains locked')
-				res.writeHead(401)
-			}
-			break;
-		default:
-			res.writeHead(400)
+	switch (req.method + ' ' + req.url) {
+	case 'GET /repos': {
+		if (!unlocked) {
+			res.writeHead(401)
+			break
+		}
+		res.setHeader('Content-Type', 'application/json')
+		const r = JSON.stringify(allRepos())
+		res.write(r)
+		break
+	}
+	case 'POST /unlock': {
+		const data = await getBody(req)
+		const result = encrypt(data, encInput)
+		if (result === encOutput) {
+			log('UNLOCKING BACKEND')
+			unlocked = true
+			// setTimeout(() => { unlocked = false }, 10 * 1000)
+		} else {
+			log('key mismatch, backend locked')
+			unlocked = false
+			res.writeHead(401)
+		}
+		break
+	}
+	default:
+		res.writeHead(400)
 	}
 	res.end()
 })
 
 async function main() {
 	const args = parseArgs(process.argv.slice(2))
-	if(args.help) {
+	if (args.help) {
 		console.log('-s <url>\t\tset base url\n-e\t\t\tsecure access with crypto challenge')
 		return
 	}
-	if(args.e) {
+	if (args.e) {
 		const password = fs.readFileSync('backend/key', 'utf-8').trim()
 		encOutput = encrypt(password, encInput)
 		server.listen(8020)
 	}
-	if(args.s) addPage(args.s)
+	if (args.s) {
+		await initStorage()
+		addPage(args.s)
+	}
 }
 
-process.on("SIGINT",()=>{
-	writeMapsToDisk()
+process.on('SIGINT', () => {
+	writeToDisk()
 	process.exit()
 })
 

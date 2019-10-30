@@ -1,62 +1,26 @@
-const fs = require("fs")
-const path = require("path")
-const { log } = require("./log")
+const { log } = require('./log')
+const { storeRepo, addFileEntry } = require('./store')
 
-const REPO_JSON = path.join(__dirname, "..", "store", "repos.json")
-const CODEFILES_JSON = path.join(__dirname, "..", "store", "code-files.json")
-
-let repos = new Map()
-let codeFiles = new Map()
-
-function saveRepoDetails(url, $, details) {
+async function saveRepoDetails(url, $) {
+	const details = $('.repohead-details-container')
+	if (!details.length) {
+		return false
+	}
 	const author = details.find($('span.author')).text()
-	const repo = details.find($('strong[itemprop="name"]')).text()
+	const name = details.find($('strong[itemprop="name"]')).text()
 	let stars
 	details.find($('.social-count')).each((i, e) => {
 		if ($(e).attr('aria-label').includes('starred')) {
-			stars = $(e).attr('aria-label').split(' ')[0]
+			stars = Number.parseInt($(e).attr('aria-label').split(' ')[0])
 		}
 	})
-	if (!repos.has(url)) {
-		repos.set(url, { url, author, repo, stars })
-		//log(`added repo ${author} ${repo} ${stars}`)
-	}
+	await storeRepo({ url, author, name, stars, files: [] })
+	return true
 }
 
-function mapToObjects(map) {
-	let r = []
-	for (let v of map.values()) {
-		r.push(v)
-	}
-	return r
+async function saveCodeFile(url, type, content, analytics) {
+	const repoUrl = new URL(url).origin + new URL(url).pathname.split('/').slice(0, 3).join('/') + '/'
+	await addFileEntry(repoUrl, { url, type, content, analytics })
 }
 
-function getRepos(fake) {
-	if (fake) return getFakeRepos()
-	return mapToObjects(repos)
-}
-
-function getFakeRepos() {
-	return [
-		{ author: "root", repo: "testing", stars: "99" },
-		{ author: "root", repo: "high-integrity", stars: "340" }
-	]
-}
-
-function getCodeFiles() {
-	return mapToObjects(codeFiles)
-}
-
-function saveCodeFile(url, type, body, analytics) {
-	if (!codeFiles.has(url)) {
-		codeFiles.set(url, { url, type, body, analytics })
-		log(`added ${type} file: ${url}`)
-	}
-}
-
-function writeMapsToDisk() {
-	fs.writeFileSync(REPO_JSON, JSON.stringify(getRepos()))
-	fs.writeFileSync(CODEFILES_JSON, JSON.stringify(getCodeFiles()))
-}
-
-module.exports = { saveRepoDetails, getRepos, saveCodeFile, writeMapsToDisk }
+module.exports = { saveRepoDetails, saveCodeFile }
