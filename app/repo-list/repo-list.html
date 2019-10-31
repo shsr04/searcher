@@ -2,21 +2,29 @@
     <div class="head">
         <input placeholder="Search repositories" ng-model="$ctrl.searchTerm">
         <p>
-            <span class="col" ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
-            <span class="col" ng-show="!$ctrl.searchTerm">Enter a repository name</span>
+            <span ng-show="$ctrl.ready">
+                <span class="col" ng-show="$ctrl.searchTerm">Repositories matching {{$ctrl.searchTerm}}</span>
+                <span class="col" ng-show="!$ctrl.searchTerm">Enter a repository name</span>
+            </span>
+            <span ng-show="!$ctrl.ready">
+                <span class="col">Loading repositories...</span>
+            </span>
         </p>
     </div>
-    <div class="main">
-        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:'-stars'">
-            <div class="row">
+    <div class="main" ng-show="$ctrl.ready">
+        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:'-stars'" after-delay="$ctrl.ready=true">
+            <div ng-class-even="'even'" ng-class-odd="'odd'" class="row">
                 <span class="wide col">
                     {{r.author}}/{{r.name}} : {{r.stars}} stars
                 </span>
+                <span class="col" ng-init="files=r.files.length">
+                    {{files}} files
+                </span>
                 <span class="col">
-                    <a href="" ng-click="showMe=!showMe" ng-init="showMe=false" class="btn btn-info">Details</a>
+                    <button class="btn btn-info" ng-click="showMe=!showMe" ng-init="showMe=false">Details</button>
                 </span>
             </div>
-            <repo-details ng-show="showMe" repo="r"></repo-details>
+            <repo-details repo="r" total-files="files"></repo-details>
         </div>
     </div>
 </div>

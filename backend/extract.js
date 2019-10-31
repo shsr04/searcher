@@ -20,9 +20,10 @@ async function saveRepoDetails(url, $) {
 
 async function saveCodeFile(url, name, content, analytic) {
 	const repoUrl = new URL(url).origin + new URL(url).pathname.split('/').slice(0, 3).join('/') + '/'
+	const path = new URL(url).pathname.split('/blob/master/')[1].slice(0, -1)
 	const type = fileType(name.split(".").pop())
 	log(`adding ${type} file: ${url}`)
-	await addFileEntry(repoUrl, { url, name, type, content: '', analytic })
+	await addFileEntry(repoUrl, { url, name, path, type, content: null, analytic })
 }
 
 module.exports = { saveRepoDetails, saveCodeFile }

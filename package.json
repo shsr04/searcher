@@ -5,7 +5,7 @@
   "private": true,
   "main": "app/app.module.js",
   "scripts": {
-    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js -e -s https://github.com/topics/cpp -i /issues/ -i /pulls/",
+    "start": "http-server ./app -a localhost -p 8000 -c-1 & node backend/main.js -e # -s https://github.com/topics/cpp -i /issues/ -i /pulls/",
     "test": "ava",
     "lint": "eslint --fix backend/*.js app/**/*.js || true"
   },

@@ -11,6 +11,7 @@ message Analytic {
 message File {
     string url = 1;
     string name = 2;
+    string path = 6;
     enum FileType {
         C_CPP = 0;
     }

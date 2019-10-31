@@ -1,5 +1,6 @@
 body {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;    
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;  
+    font-size: large;  
 }
 
 .container {
@@ -36,10 +37,43 @@ body {
 
 .row {
     display: flex;
+    margin: 0.5em;
+    padding: 0.25em;
 }
 .row > .col {
     flex: auto;
 }
 .row > .col.wide {
     flex-grow: 100;
+}
+.even.row {
+    background: rgba(55, 55, 63, 0.445);
+    margin: inherit;
+}
+.odd.row {
+    background: rgba(102, 102, 117, 0.445);
+    margin:inherit;
+}
+
+.btn {
+    background-color: transparent;
+    border: 1px solid transparent;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 0.25rem;
+    padding: 0.25em 0.5em;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+    .btn-info:hover {
+    color: #fff;
+    background-color: #138496;
+    border-color: #117a8b;
+}
+    .btn-info:focus, .btn-info.focus {
+    box-shadow: 0 0 0 0.2rem rgba(58, 176, 195, 0.5);
 }
