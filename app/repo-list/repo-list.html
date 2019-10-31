@@ -7,7 +7,7 @@
         </p>
     </div>
     <div class="main">
-        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:stars">
+        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:'-stars'">
             <div class="row">
                 <span class="wide col">
                     {{r.author}}/{{r.name}} : {{r.stars}} stars

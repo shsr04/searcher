@@ -2,8 +2,9 @@
 const http = require('http')
 const crypto = require('crypto')
 const fs = require('fs')
+const path = require("path")
 const parseArgs = require('minimist')
-const { addPage, setRestrict } = require('./pages')
+const { addPage, setRestrict, ignorePath } = require('./pages')
 const { initStorage, writeToDisk, allRepos } = require('./store')
 const { log } = require('./log')
 
@@ -71,18 +72,27 @@ const server = http.createServer(async (req, res) => {
 	res.end()
 })
 
+function initFolders() {
+	for (let f of ['store', path.join('store', 'code')]) {
+		const dir = path.join(__dirname, '..', f)
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+	}
+}
+
 async function main() {
 	const args = parseArgs(process.argv.slice(2))
-	if (args.help) {
-		console.log('-s <url>\t\tset base url\n-e\t\t\tsecure access with crypto challenge')
+	if (args.h || args.help) {
+		console.log('-s <url>\t\tset base URL\n-r\t\t\trestrict to child URLs of the base URL\n-i <string>\t\tignore any URLs containing `string`\n-e\t\t\tsecure access with crypto challenge')
 		return
 	}
 	if (args.e) {
 		const password = fs.readFileSync('backend/key', 'utf-8').trim()
 		encOutput = encrypt(password, encInput)
 	}
+	initFolders()
 	await initStorage()
 	server.listen(8020)
+	if (args.i) for (let a of args.i) ignorePath(a)
 	if (args.r) setRestrict(true)
 	if (args.s) addPage(args.s)
 }

@@ -1,11 +1,12 @@
 const Crawler = require('crawler')
 const cheerio = require('cheerio')
 const { saveRepoDetails, saveCodeFile } = require('./extract')
-const { analyzeC } = require('./analyze')
-const {log} =require("./log") 
+const { analyze } = require('./analyze')
+const { log } = require("./log")
 
 let pages = new Set()
 let RESTRICT = false
+let IGNORED = []
 let baseUrl
 
 const crawler = new Crawler({
@@ -28,21 +29,17 @@ const crawler = new Crawler({
 			saveRepoDetails(pageUrl, $).then(() => {
 				const code = $('.blob-wrapper')
 				if (pageUrl.includes('/blob/master/') && code.length) {
-					let analytics = {}
-					let content = ''
-					const suffix = pageUrl.slice(0, pageUrl.length - 1).split(".").pop()
-					if (['c', 'h', 'cc', 'cpp', 'hpp'].includes(suffix)) {
-						content = code.text()
-						log(`analyzing ${pageUrl}`)
-						analytics = analyzeC(pageUrl.split('/').pop(), content)
-					}
-					return saveCodeFile(pageUrl, content, analytics)
+					const content = code.text()
+					const fileName = pageUrl.slice(0, pageUrl.length - 1).split("/").pop()
+					const suffix = fileName.split(".").pop()
+					const analytic = analyze(suffix, fileName, content)
+					return saveCodeFile(pageUrl, fileName, content, analytic)
 				}
 				return Promise.resolve()
 			}).then(() => {
 				$('a').each((i, e) => {
 					const href = $(e).attr('href')
-					if (href && href.startsWith(baseUrl)) {
+					if (isValidUrl(href)) {
 						addPage(href)
 					}
 				})
@@ -68,6 +65,14 @@ function formatUrl(p) {
 	return b.charAt(b.length - 1) != '/' ? b + '/' : b
 }
 
+function isValidUrl(p) {
+	if (!p || !p.startsWith(baseUrl)) return false
+	for (let a of IGNORED) {
+		if (p.includes(a)) return false
+	}
+	return true
+}
+
 /**
  * Add a page to the crawler queue
  * @param {string} p URL to queue
@@ -90,4 +95,8 @@ function setRestrict(bool) {
 	RESTRICT = bool
 }
 
-module.exports = { addPage, setRestrict }
+function ignorePath(p) {
+	IGNORED.push(p)
+}
+
+module.exports = { addPage, setRestrict, ignorePath }

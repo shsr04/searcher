@@ -18,12 +18,11 @@ async function saveRepoDetails(url, $) {
 	await storeRepo({ url: repoUrl, author, name, stars })
 }
 
-async function saveCodeFile(url, content, analytics) {
+async function saveCodeFile(url, name, content, analytic) {
 	const repoUrl = new URL(url).origin + new URL(url).pathname.split('/').slice(0, 3).join('/') + '/'
-	const name = url.slice(0, url.length - 1).split('/').pop()
 	const type = fileType(name.split(".").pop())
-	log(`adding ${type} file: ${name}`)
-	await addFileEntry(repoUrl, { url, name, type, content, analytics })
+	log(`adding ${type} file: ${url}`)
+	await addFileEntry(repoUrl, { url, name, type, content: '', analytic })
 }
 
 module.exports = { saveRepoDetails, saveCodeFile }
