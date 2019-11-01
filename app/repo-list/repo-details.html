@@ -1,10 +1,7 @@
-<div class="slim container" ng-show="$ctrl.show">
-    <div class="main">
-        <p class="row">Details of {{$ctrl.author}}/{{$ctrl.name}}</p>
-        <p class="row">{{$ctrl.totalFiles}} files</p>
-        <div class="row" ng-repeat="f in $ctrl.files | orderBy:'name'">
-            <span class="wide col">File: {{f.path}}</span>
-            <span class="col">Lines: {{f.analytic.linesOfCode}}</span>
-        </div>
-    </div>
+<span class="col-12">Details of {{$ctrl.author}}/{{$ctrl.name}}</span>
+<span class="col-12"><strong>{{$ctrl.totalLinesOfCode}} lines</strong> in {{$ctrl.totalFiles}} files</span>
+<div ng-repeat="f in $ctrl.files | orderBy:'name'" class="narrowing row">
+    <span class="col-8">File: {{f.path}}</span>
+    <span class="col-2">Lines: {{f.analytic.linesOfCode}}</span>
+    <span class="col-2" ng-show="f.analytic.cyclomatic">Complexity: {{f.analytic.cyclomatic}}</span>
 </div>

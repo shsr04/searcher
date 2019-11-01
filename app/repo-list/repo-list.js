@@ -1,12 +1,10 @@
 angular.module('searcherApp').component('repoList', {
 	templateUrl: 'repo-list/repo-list.html',
-	controller: ['$http', '$timeout', function RepoListController($http, $timeout) {
+	controller: ['$http', function RepoListController($http) {
 		const _this = this
 		this.ready = false
 		let _repoBuf
-		$http.post('http://localhost:8020/unlock', 'testkey').then(() => {
-			return $http.get('http://localhost:8020/repos')
-		}).then(res => {
+		$http.get('http://localhost:8020/repos').then(res => {
 			_repoBuf = res.data.data
 			return protobuf.load("lib/transfer/repository.proto")
 		}).then(root => {

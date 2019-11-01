@@ -8,6 +8,7 @@ const { addPage, setRestrict, ignorePath } = require('./pages')
 const { initStorage, writeToDisk, allRepos } = require('./store')
 const { log } = require('./log')
 
+let needUnlock = false
 let unlocked = false
 const encInput = fs.readFileSync('backend/inp', 'utf-8').trim()
 let encOutput
@@ -43,7 +44,7 @@ const server = http.createServer(async (req, res) => {
 	}
 	switch (req.method + ' ' + req.url) {
 		case 'GET /repos': {
-			if (!unlocked) {
+			if (needUnlock && !unlocked) {
 				res.writeHead(401)
 				break
 			}
@@ -86,15 +87,16 @@ async function main() {
 		return
 	}
 	if (args.e) {
+		needUnlock = true
 		const password = fs.readFileSync('backend/key', 'utf-8').trim()
 		encOutput = encrypt(password, encInput)
 	}
 	initFolders()
 	await initStorage()
-	server.listen(8020)
 	if (args.i) for (let a of args.i) ignorePath(a)
 	if (args.r) setRestrict(true)
 	if (args.s) addPage(args.s)
+	server.listen(8020)
 }
 
 process.on('SIGINT', () => {

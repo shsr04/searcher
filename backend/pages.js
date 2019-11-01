@@ -6,7 +6,7 @@ const { log } = require("./log")
 
 let pages = new Set()
 let RESTRICT = false
-let IGNORED = []
+let IGNORED = ['/issues/','/pulls','/commits/']
 let baseUrl
 
 const crawler = new Crawler({
@@ -38,7 +38,7 @@ const crawler = new Crawler({
 				return Promise.resolve()
 			}).then(() => {
 				$('a').each((i, e) => {
-					const href = $(e).attr('href')
+					const href = formatUrl($(e).attr('href'))
 					if (isValidUrl(href)) {
 						addPage(href)
 					}
@@ -50,6 +50,10 @@ const crawler = new Crawler({
 			})
 		}
 	}
+})
+
+crawler.on("drain", () => {
+	log("QUEUE EMPTY")
 })
 
 /**

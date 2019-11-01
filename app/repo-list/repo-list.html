@@ -12,19 +12,18 @@
         </p>
     </div>
     <div class="main" ng-show="$ctrl.ready">
-        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:'-stars'" after-delay="$ctrl.ready=true">
-            <div ng-class-even="'even'" ng-class-odd="'odd'" class="row">
-                <span class="wide col">
+        <div ng-repeat="r in $ctrl.repos | filter:{name:$ctrl.searchTerm} | orderBy:'-stars'"
+            after-delay="$ctrl.ready=true" class="alternating">
+            <div class="spaced row">
+                <span class="col-8">
                     {{r.author}}/{{r.name}} : {{r.stars}} stars
                 </span>
-                <span class="col" ng-init="files=r.files.length">
+                <span class="col-2" ng-init="files=r.files.length">
                     {{files}} files
                 </span>
-                <span class="col">
-                    <button class="btn btn-info" ng-click="showMe=!showMe" ng-init="showMe=false">Details</button>
-                </span>
+                <span class="col-2 btn btn-info" ng-click="showMe=!showMe" ng-init="showMe=false">Details</span>
+                <repo-details class="narrowing row" ng-show="showMe" repo="r"></repo-details>
             </div>
-            <repo-details repo="r" total-files="files"></repo-details>
         </div>
     </div>
 </div>
